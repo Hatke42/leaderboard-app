@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Leaderboard from Mara Jayega</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; }
+        .refresh-time { margin: 20px 0; color: #666; }
+        table { margin-top: 20px; }
+
+    </style>
+</head>
+<body>
+    <h1 class="mb-4">Mission Leaderboard</h1>
+    <div class="refresh-time">Last updated: <span id="last-updated">Loading...</span></div>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Frequency(Problem Solved)</th>
+                <th>Mission</th>
+                <th>Section</th>
+            </tr>
+        </thead>
+        <tbody id="leaderboard-body">
+            <!-- Data will be populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/leaderboard');
+                const data = await response.json();
+
+                if (data.error) {
+                    document.getElementById('leaderboard-body').innerHTML = `
+                        <tr><td colspan="3">Error: ${data.error}</td></tr>
+                    `;
+                    return;
+                }
+
+                // Update last updated time
+                document.getElementById('last-updated').textContent = data.last_updated;
+
+                // Populate table
+                const tbody = document.getElementById('leaderboard-body');
+                tbody.innerHTML = data.data.map(item => `
+                    <tr>
+                        <td>${item.count}x</td>
+                        <td>${item.mission}</td>
+                        <td>${item.section}</td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+            }
+        }
+
+        // Initial load and set interval
+        fetchData();
+        setInterval(fetchData, 60000);
+    </script>
+</body>
+</html>
